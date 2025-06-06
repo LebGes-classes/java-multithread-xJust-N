@@ -1,4 +1,4 @@
-package com.just_n.multithread.repository;
+package com.just_n.multithread.model;
 
 public interface Entity {
     int getId();

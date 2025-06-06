@@ -1,12 +1,13 @@
-package com.journal_app.repository;
+package com.just_n.multithread.repository;
 
-public enum FileStringsEnum {   //Строки связанные с входным файлом
-    TEACHERS("преподаватели"),  //Названия ожидаемых страниц в xlsx
-    SUBJECTS("предметы"),
-    STUDENTS("студенты"),
-    XLSX_FILE_NAME("resources/journal.xlsx"),
-    JSON_FILE_NAME("resources/journal.json"),
-    BINARY_FILE_NAME("resources/journal.bin");
+public enum FileStringsEnum {
+    TASKS("задачи"),
+    EMPLOYEES("сотрудники"),
+
+    FILENAME("task_app"),
+    XLSX_FILE_NAME("resources/" + FILENAME.getValue() + ".xlsx"),
+    JSON_FILE_NAME("resources/" + FILENAME.getValue() + ".json"),
+    BINARY_FILE_NAME("resources/" + FILENAME.getValue() + ".bin");
 
     private final String value;
 

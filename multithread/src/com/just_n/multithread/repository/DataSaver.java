@@ -1,6 +1,4 @@
-package com.journal_app.repository;
-
-import com.just_n.multithread.repository.ObjectStorage;
+package com.just_n.multithread.repository;
 
 import java.io.IOException;
 

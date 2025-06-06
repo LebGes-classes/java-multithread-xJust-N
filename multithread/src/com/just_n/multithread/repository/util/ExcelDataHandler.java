@@ -9,15 +9,23 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class ExcelDataHandler {
     private final File file;
 
-    public ExcelDataHandler(File file) {
+    public ExcelDataHandler(File file){
         this.file = file;
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException("Файл не существует и его невозможно создать :(\n" + e);
+            }
+        }
     }
 
     public <T> Collection<T> parseObjectsFromSheetName(String sheetName, Class<T> tClass) throws IOException {    //Возвращает список спаршенных объектов, где строчка в xlsx - параметры конструктора
@@ -29,7 +37,7 @@ public class ExcelDataHandler {
             Objects.requireNonNull(sheet, "страница в .xlsx не найдена");
 
             int startRow = sheet.getTopRow() + 1;   // Пропуск верхней строчки с обозначениями
-            int lastRow = sheet.getLastRowNum();
+            int lastRow = sheet.getLastRowNum() + 1;
             for (int j = startRow; j < lastRow; j++) {
                 Row row = sheet.getRow(j);
 
@@ -42,18 +50,20 @@ public class ExcelDataHandler {
                     switch (cell.getCellType()) {
                         case STRING:
                             params[k - startCell] = cell.getStringCellValue();
+                            paramsTypes[k - startCell] = String.class;
                             break;
                         case NUMERIC:
                             params[k - startCell] = (int) cell.getNumericCellValue();
+                            paramsTypes[k - startCell] = int.class;
                             break;
                         case BOOLEAN:
                             params[k - startCell] = cell.getBooleanCellValue();
+                            paramsTypes[k - startCell] = boolean.class;
                             break;
                         default:
                             throw new IOException("Ячейка " + (char) (k + 65) + (j) + " имеет неизвестный тип");
                     }
 
-                    paramsTypes[k - startCell] = params[k - startCell].getClass();
                 }
                 try {
                     Constructor<T> constructor = tClass.getConstructor(paramsTypes);
@@ -76,30 +86,49 @@ public class ExcelDataHandler {
 
     public <T> void saveObjectsToExcel(String sheetName, Collection<T> objects) throws IOException {
         Objects.requireNonNull(objects, "передан null");
-        try (FileInputStream fis = new FileInputStream(file);
-             XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
-            Sheet sheet = workbook.getSheet(sheetName);
-            Objects.requireNonNull(sheet, "страница в .xlsx не найдена");
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet(sheetName);
 
             Field[] fields = objects.iterator().next().getClass().getDeclaredFields();
-            AtomicInteger i = new AtomicInteger(sheet.getLastRowNum());
-            objects.forEach(
-                    obj -> {
-                        Row row = sheet.getRow(i.getAndIncrement());
-                        for (int j = 0; j < fields.length; j++) {
-                            try {
-                                row.getCell(j).setCellValue(fields[j].get(obj).toString());
-                            } catch (IllegalAccessException e) {
-                                //throw new IOException("Ошибка доступа к полям класса: " + e);
-                            }
-                        }
-                    });
+            int rowNum = sheet.getFirstRowNum() + 1;
+            if(rowNum == 0)
+                rowNum = 1;
+
+            for(T obj : objects) {
+                Row row = sheet.createRow(rowNum++);
+                for(int i = 0; i < fields.length; i++){
+                    Field field = fields[i];
+                    field.setAccessible(true);
+                    writeFieldToCell(row.createCell(i), field.getType(), field.get(obj));
+                }
+            }
 
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
                 workbook.write(outputStream);
             }
-        } catch (IOException e) {
-            throw new IOException(e);
+        } catch (IllegalAccessException e) {
+            throw new IOException("Ошибка доступа при записи объекта в xlsx\n" + e);
+        }
+    }
+
+    private void writeFieldToCell(Cell cell, Class<?> type, Object o) throws IOException {
+        if(type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class)){
+            cell.setCellValue((int) o);
+        }
+        else if(type.isAssignableFrom(Boolean.class) || type.isAssignableFrom(boolean.class)){
+            cell.setCellValue((boolean) o);
+        }
+        else if(type.isAssignableFrom(String.class) || type.isAssignableFrom(UUID.class)){
+            cell.setCellValue((String) o);
+        }
+        else if(type.isAssignableFrom(LocalDate.class)){
+            cell.setCellValue((LocalDate) o);
+        }
+        else if(type.isAssignableFrom(LocalDateTime.class)){
+            cell.setCellValue((LocalDateTime) o);
+        }
+        else{
+            throw new IOException("Невозможно записать поле класса в ячейку: неизвестный тип: " + type.getSimpleName());
         }
     }
 }

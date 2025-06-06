@@ -1,5 +1,7 @@
 package com.just_n.multithread.repository;
 
+import com.just_n.multithread.model.Entity;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
