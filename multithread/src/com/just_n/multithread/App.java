@@ -6,24 +6,22 @@ import com.just_n.multithread.repository.DataLoader;
 import com.just_n.multithread.repository.ObjectStorage;
 import com.just_n.multithread.repository.loaders.XlsxLoader;
 import com.just_n.multithread.repository.savers.XlsxSaver;
-import com.just_n.multithread.repository.util.ExcelDataHandler;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.just_n.multithread.repository.FileStringsEnum.XLSX_FILE_NAME;
 
 public class App {
     private boolean isRunning;
     private final ObjectStorage objectStorage;
 
-    public App(){
+    public App() {
         isRunning = false;
         objectStorage = ObjectStorage.getInstance();
     }
 
-    public void start(){
+    public void start() {
         try {
             load();
         } catch (IOException e) {
@@ -31,33 +29,34 @@ public class App {
         }
         run();
     }
+
     private void load() throws IOException {
         DataLoader dl = new XlsxLoader();
         dl.load(objectStorage);
     }
-    private void run(){
+
+    private void run() {
         print("Старт рабочего дня..\n");
         List<Employee> employeeList = objectStorage.getListOfObjects(Employee.class);
         List<Task> taskList = objectStorage.getListOfObjects(Task.class);
         Iterator<Task> taskIterator = taskList.iterator();
-        synchronized(objectStorage) {
-            employeeList.forEach(e -> {
-                if (taskIterator.hasNext())
-                    e.assignTask(taskIterator.next());
-                new Thread(e).start();
-            });
+        synchronized (employeeList) {
+            new Thread(
+                    () -> employeeList.forEach(e -> {
+                        if (taskIterator.hasNext())
+                            e.assignTask(taskIterator.next());
+                        new Thread(e).start();
+                    })
+            ).start();
         }
+        employeeList.forEach(System.out::println);
 
-        //print("Конец рабочего дня\n");
-//        try{
-//            save();
-//        } catch (IOException e) {
-//            print("Не удалость сохранить в xlsx:\n" + e);
-//        }
     }
-    private void print(String s){
+
+    private void print(String s) {
         System.out.println(s);
     }
+
     private void save() throws IOException {
         new XlsxSaver().save(objectStorage);
     }

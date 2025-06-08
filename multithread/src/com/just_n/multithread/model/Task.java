@@ -1,8 +1,5 @@
 package com.just_n.multithread.model;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 public class Task implements Runnable, Entity {
     private final String name;
     private final int totalHours;
@@ -32,11 +29,7 @@ public class Task implements Runnable, Entity {
     @Override
     public void run() {
         isRunning = true;
-        Thread executionThread = Thread.currentThread();
-        System.out.printf("Начато выполнение задачи '%s' (%d часов)%n",
-               
-                name, totalHours);
-
+        System.out.printf("Начато выполнение задачи '%s' (%d часов)%n", name, totalHours);
         try {
             while (hoursCompleted < totalHours && isRunning) {
                 synchronized (this) {
@@ -46,18 +39,11 @@ public class Task implements Runnable, Entity {
                 }
                 Thread.sleep(5000);
                 hoursCompleted++;
-
-                System.out.printf(
-                        "Задача '%s': %d/%d часов выполнено%n",
-                       
-                        name, hoursCompleted, totalHours);
+                System.out.printf("Задача '%s': %d/%d часов выполнено%n", name, hoursCompleted, totalHours);
             }
             isCompleted = hoursCompleted >= totalHours;
-            System.out.printf("Задача '%s' %s%n",
-                    name, isCompleted ? "завершена" : "прервана");
         } catch (InterruptedException e) {
-            System.out.printf("Задача '%s' прервана!%n",
-                    name);
+            System.out.printf("Задача '%s' прервана!%n",name);
             Thread.currentThread().interrupt();
         } finally {
             isRunning = false;

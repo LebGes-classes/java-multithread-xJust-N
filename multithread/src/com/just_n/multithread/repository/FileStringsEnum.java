@@ -5,9 +5,9 @@ public enum FileStringsEnum {
     EMPLOYEES("сотрудники"),
 
     FILENAME("task_app"),
-    XLSX_FILE_NAME("multithread/resources/" + FILENAME.getValue() + ".xlsx"),
-    JSON_FILE_NAME("multithread/resources/" + FILENAME.getValue() + ".json"),
-    BINARY_FILE_NAME("multithread/resources/" + FILENAME.getValue() + ".bin");
+    XLSX_FILE_NAME("resources/" + FILENAME.getValue() + ".xlsx"),
+    JSON_FILE_NAME("resources/" + FILENAME.getValue() + ".json"),
+    BINARY_FILE_NAME("resources/" + FILENAME.getValue() + ".bin");
 
     private final String value;
 
