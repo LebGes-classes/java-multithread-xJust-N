@@ -28,7 +28,7 @@ public class ExcelDataHandler {
         }
     }
 
-    public <T> Collection<T> parseObjectsFromSheetName(String sheetName, Class<T> tClass) throws IOException {    //Возвращает список спаршенных объектов, где строчка в xlsx - параметры конструктора
+    public <T> List<T> parseObjectsFromSheetName(String sheetName, Class<T> tClass) throws IOException {    //Возвращает список спаршенных объектов, где строчка в xlsx - параметры конструктора
         List<T> listOfObjects = new LinkedList<>();
 
         try (FileInputStream fis = new FileInputStream(file);
@@ -69,7 +69,7 @@ public class ExcelDataHandler {
                     Constructor<T> constructor = tClass.getConstructor(paramsTypes);
                     listOfObjects.add(constructor.newInstance(params));
                 } catch (NoSuchMethodException e) {
-                    throw new NoSuchMethodException("Класс не имеет нужного конструктора для типов параметров: " + (Arrays.toString(paramsTypes)));
+                    throw new NoSuchMethodException("Класс <" + tClass.getSimpleName()+ ">не имеет нужного конструктора для типов параметров: " + (Arrays.toString(paramsTypes)));
                 }
 
             }
@@ -96,10 +96,15 @@ public class ExcelDataHandler {
 
             for(T obj : objects) {
                 Row row = sheet.createRow(rowNum++);
-                for(int i = 0; i < fields.length; i++){
+                int j = 0;
+                for(int i = 0; i < fields.length && j < fields.length; i++){
                     Field field = fields[i];
                     field.setAccessible(true);
-                    writeFieldToCell(row.createCell(i), field.getType(), field.get(obj));
+                    try {
+                        writeFieldToCell(row.createCell(j++), field.getType(), field.get(obj));
+                    } catch (IOException e){
+                        j--;//пропуск поля если не удалось записать
+                    }
                 }
             }
 

@@ -12,7 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ExcelDataHandlerTest {
-    private final File file = new File("test_resources/task_app.xlsx");
+    private final File file = new File("multithread/test_resources/task_app.xlsx");
     private ExcelDataHandler edh;
 
     @BeforeEach
@@ -22,8 +22,8 @@ class ExcelDataHandlerTest {
 
     @Test
     void dataHandlerTest() throws IOException {
-        Employee e1 = new Employee("Josh", 123);
-        Employee e2 = new Employee("Dave", 321);
+        Employee e1 = new Employee("Josh");
+        Employee e2 = new Employee("Dave");
         List<Employee> list = List.of(e1,e2);
         edh.saveObjectsToExcel("Сотрудники", list);
         List<Employee> parsedList = edh.parseObjectsFromSheetName("Сотрудники", Employee.class).stream().toList();
