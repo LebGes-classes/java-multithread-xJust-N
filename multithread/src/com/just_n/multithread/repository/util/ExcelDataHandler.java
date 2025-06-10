@@ -1,17 +1,20 @@
 package com.just_n.multithread.repository.util;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class ExcelDataHandler {
@@ -34,7 +37,7 @@ public class ExcelDataHandler {
         try (FileInputStream fis = new FileInputStream(file);
              XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
             Sheet sheet = workbook.getSheet(sheetName);
-            Objects.requireNonNull(sheet, "страница в .xlsx не найдена");
+            Objects.requireNonNull(sheet, "страница " + sheetName + " в .xlsx не найдена");
 
             int startRow = sheet.getTopRow() + 1;   // Пропуск верхней строчки с обозначениями
             int lastRow = sheet.getLastRowNum() + 1;
@@ -86,24 +89,31 @@ public class ExcelDataHandler {
 
     public <T> void saveObjectsToExcel(String sheetName, Collection<T> objects) throws IOException {
         Objects.requireNonNull(objects, "передан null");
-        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet(sheetName);
+        try (XSSFWorkbook workbook = new XSSFWorkbook()){
+            Sheet sheet = workbook.getSheet(sheetName) == null? workbook.createSheet(sheetName) : workbook.getSheet(sheetName);
+            List<Field> fields =
+                    Arrays.stream(objects.iterator().next().getClass().getDeclaredFields())
+                            .filter(field -> field.isAnnotationPresent(Excel.class))
+                            .toList();
 
-            Field[] fields = objects.iterator().next().getClass().getDeclaredFields();
-            int rowNum = sheet.getFirstRowNum() + 1;
-            if(rowNum == 0)
-                rowNum = 1;
+            int rowNum = sheet.getFirstRowNum();
+            if(rowNum == -1)
+                rowNum = 0;
+            Row row = sheet.createRow(rowNum++);
+            for(int i = 0; i < fields.size(); i++) {
+                String fieldName = fields.get(i).getName();
+                row.createCell(i).setCellValue(fieldName);
+            }
 
             for(T obj : objects) {
-                Row row = sheet.createRow(rowNum++);
-                int j = 0;
-                for(int i = 0; i < fields.length && j < fields.length; i++){
-                    Field field = fields[i];
+                row = sheet.createRow(rowNum++);
+                for(int i = 0; i < fields.size(); i++){
+                    Field field = fields.get(i);
                     field.setAccessible(true);
                     try {
-                        writeFieldToCell(row.createCell(j++), field.getType(), field.get(obj));
+                        writeFieldToCell(row.createCell(i), field.getType(), field.get(obj));
                     } catch (IOException e){
-                        j--;//пропуск поля если не удалось записать
+                        throw new IOException("Не удалось записать значение в ячейку\n" + e);
                     }
                 }
             }

@@ -2,6 +2,7 @@ package com.just_n.multithread;
 
 import com.just_n.multithread.model.Employee;
 import com.just_n.multithread.model.Task;
+import com.just_n.multithread.model.WorkdaySimulation;
 import com.just_n.multithread.repository.DataLoader;
 import com.just_n.multithread.repository.ObjectStorage;
 import com.just_n.multithread.repository.loaders.XlsxLoader;
@@ -36,21 +37,21 @@ public class App {
     }
 
     private void run() {
-        print("Старт рабочего дня..\n");
         List<Employee> employeeList = objectStorage.getListOfObjects(Employee.class);
         List<Task> taskList = objectStorage.getListOfObjects(Task.class);
-        Iterator<Task> taskIterator = taskList.iterator();
-        synchronized (employeeList) {
-            new Thread(
-                    () -> employeeList.forEach(e -> {
-                        if (taskIterator.hasNext())
-                            e.assignTask(taskIterator.next());
-                        new Thread(e).start();
-                    })
-            ).start();
+        WorkdaySimulation sim = new WorkdaySimulation(employeeList, taskList);
+        sim.start();
+        try {
+            sim.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        employeeList.forEach(System.out::println);
-
+        try {
+            save();
+            System.out.println("Статистика успешно сохранена в xlsx файл");
+        } catch (IOException e) {
+            System.out.println("Не удалось сохранить в файл:\n" + e);
+        }
     }
 
     private void print(String s) {

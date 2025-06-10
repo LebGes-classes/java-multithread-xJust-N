@@ -1,36 +1,41 @@
 package com.just_n.multithread.model;
 
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import com.just_n.multithread.repository.util.Excel;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.UUID;
 
 public class Employee implements Runnable, Entity {
+    @Excel
     private final int id;
+    @Excel
     private final String name;
-    private final BlockingQueue<Task> taskQueue = new LinkedBlockingQueue<>();
 
+    private final Queue<Task> taskQueue = new LinkedList<>();
+
+    @Excel
     private int hoursWorkedToday;
+    @Excel
     private int idleHoursToday;
+    @Excel
     private int completedTasks;
+    @Excel
     private int totalHoursWorked;
-    private boolean isWorking;
 
     public Employee(String name) {
         this.id = UUID.randomUUID().hashCode();
         this.name = name;
     }
 
-    public Employee(int id, String name, int hoursWorkedToday, int idleHoursToday, int completedTasks, int totalHoursWorked, boolean isWorking) {
+    public Employee(int id, String name, int hoursWorkedToday, int idleHoursToday, int completedTasks, int totalHoursWorked) {
         this.id = id;
         this.name = name;
         this.hoursWorkedToday = hoursWorkedToday;
         this.idleHoursToday = idleHoursToday;
         this.completedTasks = completedTasks;
         this.totalHoursWorked = totalHoursWorked;
-        this.isWorking = isWorking;
     }
-
 
     public void assignTask(Task task) {
         taskQueue.offer(task);
@@ -38,41 +43,40 @@ public class Employee implements Runnable, Entity {
 
     @Override
     public void run() {
-        isWorking = true;
         hoursWorkedToday = 0;
         idleHoursToday = 0;
-
-        while (hoursWorkedToday < 24 && !Thread.currentThread().isInterrupted()) {
-            Task task = taskQueue.peek();
+        Task task = null;
+        while (hoursWorkedToday + idleHoursToday < 12 && !Thread.currentThread().isInterrupted()) {
+            task = taskQueue.poll();
             if (task != null) {
-                System.out.printf("%s начал свою работу выполнения задания %s%n", name, task.getName());
+                System.out.printf("%s начал свою работу выполнения задания %s: %d hours%n", name, task.getName(), task.getTotalHours());
                 task.run();
                 hoursWorkedToday++;
                 totalHoursWorked++;
 
                 if (task.isCompleted()) {
                     completedTasks++;
-                    taskQueue.poll();
                     System.out.printf("%s завершил работу над %s%n", name, task.getName());
                 }
 
             } else {
                 idleHoursToday++;
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
         }
-        isWorking = false;
+        //if(task != null && !task.isCompleted())
+        System.out.printf("%s завершил рабочий день%n", name);
     }
     @Override
     public int getId() { return id; }
     
     @Override
     public String toString(){
-        return String.format("id: %d%n Имя:%s%n Время работы: %d%n Время простоя: %d%n Всего отработано: %d%n Всего выполнено: %d%n",
+        return String.format("id: %d%n Имя: %s%n Время работы: %d%n Время простоя: %d%n Всего отработано: %d%n Всего выполнено: %d%n",
                 id, name, hoursWorkedToday, idleHoursToday, totalHoursWorked, completedTasks);
     }
 }

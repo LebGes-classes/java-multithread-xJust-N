@@ -14,8 +14,7 @@ import static com.just_n.multithread.repository.FileStringsEnum.*;
 public class XlsxSaver implements DataSaver {
     @Override
     public void save(ObjectStorage data) throws IOException {
-        ExcelDataHandler edh = new ExcelDataHandler(new File(XLSX_FILE_NAME.getValue()));
-        edh.saveObjectsToExcel(EMPLOYEES.getValue(), data.getListOfObjects(Employee.class));
-        edh.saveObjectsToExcel(TASKS.getValue(), data.getListOfObjects(Task.class));
+        ExcelDataHandler edh = new ExcelDataHandler(new File(XLSX_OUT_FILE_NAME.getValue()));
+        edh.saveObjectsToExcel(SUMMARY.getValue(), data.getListOfObjects(Employee.class));
     }
 }

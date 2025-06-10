@@ -3,11 +3,11 @@ package com.just_n.multithread.repository;
 public enum FileStringsEnum {
     TASKS("задачи"),
     EMPLOYEES("сотрудники"),
+    SUMMARY("итоги дня"),
 
     FILENAME("task_app"),
-    XLSX_FILE_NAME("resources/" + FILENAME.getValue() + ".xlsx"),
-    JSON_FILE_NAME("resources/" + FILENAME.getValue() + ".json"),
-    BINARY_FILE_NAME("resources/" + FILENAME.getValue() + ".bin");
+    XLSX_IN_FILE_NAME("resources/" + FILENAME.getValue() + "_in.xlsx"),
+    XLSX_OUT_FILE_NAME("resources/" + FILENAME.getValue() + "_out.xlsx");
 
     private final String value;
 

@@ -14,7 +14,7 @@ import static com.just_n.multithread.repository.FileStringsEnum.*;
 public class XlsxLoader implements DataLoader {
     @Override
     public void load(ObjectStorage data) throws IOException {
-        ExcelDataHandler edh = new ExcelDataHandler(new File(XLSX_FILE_NAME.getValue()));
+        ExcelDataHandler edh = new ExcelDataHandler(new File(XLSX_IN_FILE_NAME.getValue()));
         data.addListOfObjects(edh.parseObjectsFromSheetName(EMPLOYEES.getValue(), Employee.class));
         data.addListOfObjects(edh.parseObjectsFromSheetName(TASKS.getValue(), Task.class));
     }
