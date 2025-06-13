@@ -1,6 +1,5 @@
 package com.just_n.multithread.repository;
 
-import com.just_n.multithread.model.Employee;
 import com.just_n.multithread.model.Entity;
 
 import java.util.*;

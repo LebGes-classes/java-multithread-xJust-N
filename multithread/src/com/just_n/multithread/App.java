@@ -9,16 +9,13 @@ import com.just_n.multithread.repository.loaders.XlsxLoader;
 import com.just_n.multithread.repository.savers.XlsxSaver;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 
 public class App {
-    private boolean isRunning;
     private final ObjectStorage objectStorage;
 
     public App() {
-        isRunning = false;
         objectStorage = ObjectStorage.getInstance();
     }
 
@@ -52,10 +49,6 @@ public class App {
         } catch (IOException e) {
             System.out.println("Не удалось сохранить в файл:\n" + e);
         }
-    }
-
-    private void print(String s) {
-        System.out.println(s);
     }
 
     private void save() throws IOException {

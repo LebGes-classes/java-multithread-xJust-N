@@ -45,19 +45,16 @@ public class Employee implements Runnable, Entity {
     public void run() {
         hoursWorkedToday = 0;
         idleHoursToday = 0;
-        Task task = null;
+        Task task;
         while (hoursWorkedToday + idleHoursToday < 12 && !Thread.currentThread().isInterrupted()) {
             task = taskQueue.poll();
             if (task != null) {
                 System.out.printf("%s начал свою работу выполнения задания %s: %d hours%n", name, task.getName(), task.getTotalHours());
                 task.run();
-                hoursWorkedToday++;
-                totalHoursWorked++;
-
-                if (task.isCompleted()) {
-                    completedTasks++;
-                    System.out.printf("%s завершил работу над %s%n", name, task.getName());
-                }
+                completedTasks++;
+                hoursWorkedToday += task.getTotalHours();
+                totalHoursWorked += task.getTotalHours();
+                System.out.printf("%s завершил работу над %s%n", name, task.getName());
 
             } else {
                 idleHoursToday++;
@@ -68,7 +65,6 @@ public class Employee implements Runnable, Entity {
                 }
             }
         }
-        //if(task != null && !task.isCompleted())
         System.out.printf("%s завершил рабочий день%n", name);
     }
     @Override

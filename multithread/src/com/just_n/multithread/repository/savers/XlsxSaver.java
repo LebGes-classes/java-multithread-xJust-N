@@ -1,7 +1,6 @@
 package com.just_n.multithread.repository.savers;
 
 import com.just_n.multithread.model.Employee;
-import com.just_n.multithread.model.Task;
 import com.just_n.multithread.repository.DataSaver;
 import com.just_n.multithread.repository.ObjectStorage;
 import com.just_n.multithread.repository.util.ExcelDataHandler;

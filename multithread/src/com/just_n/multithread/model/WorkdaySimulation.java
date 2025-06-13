@@ -21,14 +21,14 @@ public class WorkdaySimulation extends Thread {
         System.out.println("Старт рабочего дня...");
         System.out.printf("Всего задач: %d%n", cdl.getCount());
         Iterator<Employee> employeeIterator = employeeList.iterator();
-        for(Task task : taskList){
-            if(!employeeIterator.hasNext())
+        for (Task task : taskList) {
+            if (!employeeIterator.hasNext())
                 employeeIterator = employeeList.iterator();
             employeeIterator.next().assignTask(task);
         }
         System.out.println("Задачи в команде распределены");
         System.out.println("Начало работы...");
-        employeeList.forEach(e -> new Thread(e){
+        employeeList.forEach(e -> new Thread(e) {
             @Override
             public void run() {
                 e.run();
@@ -39,15 +39,14 @@ public class WorkdaySimulation extends Thread {
             cdl.await();
         } catch (InterruptedException e) {
             System.out.println("Рабочий день прерван\n" + e);
-        }
-        finally{
+        } finally {
             System.out.println("Конец рабочего дня");
             printStatistics();
         }
     }
 
-private void printStatistics() {
-    System.out.println("&nПодведение итогов...");
-    employeeList.forEach(System.out::println);
-}
+    private void printStatistics() {
+        System.out.println("%nПодведение итогов...");
+        employeeList.forEach(System.out::println);
+    }
 }
