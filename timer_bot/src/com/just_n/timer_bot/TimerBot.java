@@ -8,17 +8,18 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-public class TimerBot extends TelegramLongPollingBot {
+public class TimerBot extends TelegramLongPollingBot implements MessageService {
     private final String botUsername;
     private final String botToken;
+    private long chatId;
 
     public TimerBot(String botUsername, String botToken) {
         this.botUsername = botUsername;
         this.botToken = botToken;
     }
 
-
-    public void sendMessage(long chatId, String text) {
+    @Override
+    public void send(String text) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
@@ -30,20 +31,20 @@ public class TimerBot extends TelegramLongPollingBot {
         }
     }
 
-    private void handleCommand(long chatId, String command) {
+    private void handleCommand(String command) {
         Handler handler = HandlerFactory.getHandler(command);
         if (handler == null) {
-            sendMessage(chatId, "Невозможно обработать команду");
+            send("Невозможно обработать команду");
             return;
         }
-        handler.handle(new MessageService(this, chatId), command);
+        handler.handle(this, command);
     }
 
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            long chatId = update.getMessage().getChatId();
-            handleCommand(chatId, update.getMessage().getText());
+            chatId = update.getMessage().getChatId();
+            handleCommand(update.getMessage().getText());
         }
     }
 
@@ -59,6 +60,4 @@ public class TimerBot extends TelegramLongPollingBot {
         return botToken;
     }
 
-    public void shutdown() {
-    }
 }
